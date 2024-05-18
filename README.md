@@ -7,8 +7,11 @@
 ---
 
 **Materia:** SIST. OPERATIVOS DISTRIBUIDOS 
+
 **Profesor:** Juan Carlos Romero
+
 **Alumno:** Facundo Topa 
+
 **Año:** 2024
 
 ---
