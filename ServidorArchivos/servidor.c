@@ -26,22 +26,26 @@ int main(int argc, char *argv[]) {
     int sockfd;
     struct sockaddr_in addr_in, addrcli_in;
 
+    // Crear socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Error al crear el socket");
         exit(EXIT_FAILURE);
     }
 
+    // Configurar dirección
     addr_in.sin_family = AF_INET;
     addr_in.sin_port = htons(PUERTO);
     addr_in.sin_addr.s_addr = inet_addr(argv[1]);
     memset(addr_in.sin_zero, 0, sizeof(addr_in.sin_zero));
 
+    // Enlazar socket
     if (bind(sockfd, (struct sockaddr *)&addr_in, sizeof(addr_in)) < 0) {
         perror("Error en bind");
         close(sockfd);
         exit(EXIT_FAILURE);
     }
 
+    // Escuchar conexiones
     if (listen(sockfd, 5) < 0) {
         perror("Error en listen");
         close(sockfd);
@@ -54,6 +58,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         int sockclifd = accept(sockfd, (struct sockaddr *)&addrcli_in, &addrlen);
         if (sockclifd >= 0) {
+            // Crear un nuevo hilo para manejar la conexión
             pthread_t hilo;
             int *pclient = malloc(sizeof(int));
             *pclient = sockclifd;
@@ -102,7 +107,7 @@ void *atender(void *arg) {
             } else if (buffer[0] == '2') {
                 // Enviar contenido del archivo
                 char *filename = buffer + 1;
-                filename[strcspn(filename, "\n")] = '\0'; // Remove newline character
+                filename[strcspn(filename, "\n")] = '\0'; // Remover carácter de nueva línea
                 int fd = open(filename, O_RDONLY);
                 if (fd < 0) {
                     perror("Error al abrir el archivo");
@@ -122,7 +127,7 @@ void *atender(void *arg) {
                 // Modificar contenido del archivo
                 char *filename = buffer + 1;
                 char *new_content = strstr(buffer, "\n") + 1;
-                filename[strcspn(filename, "\n")] = '\0'; // Remove newline character
+                filename[strcspn(filename, "\n")] = '\0'; // Remover carácter de nueva línea
 
                 int fd = open(filename, O_WRONLY | O_TRUNC);
                 if (fd < 0) {
@@ -145,7 +150,7 @@ void *atender(void *arg) {
             } else if (buffer[0] == '4') {
                 // Eliminar archivo
                 char *filename = buffer + 1;
-                filename[strcspn(filename, "\n")] = '\0'; // Remove newline character
+                filename[strcspn(filename, "\n")] = '\0'; // Remover carácter de nueva línea
 
                 if (remove(filename) == 0) {
                     strcpy(buffer, "Archivo eliminado con éxito");
@@ -160,7 +165,7 @@ void *atender(void *arg) {
                 // Crear archivo
                 char *filename = buffer + 1;
                 char *content = strstr(buffer, "\n") + 1;
-                filename[strcspn(filename, "\n")] = '\0'; // Remove newline character
+                filename[strcspn(filename, "\n")] = '\0'; // Remover carácter de nueva línea
 
                 int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
                 if (fd < 0) {
