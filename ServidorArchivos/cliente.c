@@ -28,16 +28,19 @@ int main(int argc, char *argv[]) {
     int sockclifd;
     struct sockaddr_in addrcli_in;
 
+    // Crear un socket TCP/IP
     if ((sockclifd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Error al crear el socket");
         exit(EXIT_FAILURE);
     }
 
+    // Configurar la dirección del cliente
     addrcli_in.sin_family = AF_INET;
     addrcli_in.sin_port = htons(atoi(argv[2]));
     addrcli_in.sin_addr.s_addr = inet_addr(argv[1]);
     memset(addrcli_in.sin_zero, 0, sizeof(addrcli_in.sin_zero));
 
+    // Conectar al servidor
     if (connect(sockclifd, (struct sockaddr *)&addrcli_in, sizeof(addrcli_in)) < 0) {
         perror("Error en connect");
         close(sockclifd);
@@ -73,6 +76,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+// Solicitar y mostrar el listado de archivos en el directorio del servidor
 void enviameDirectorio(int sockclifd) {
     char mensaje[LONGMENSAJE];
     memset(mensaje, 0, sizeof(mensaje));
@@ -96,6 +100,7 @@ void enviameDirectorio(int sockclifd) {
     printf("\n");
 }
 
+// Solicitar y mostrar el contenido de un archivo en el servidor
 void enviameUnArchivo(int sockclifd) {
     char nombreArchivo[64];
     memset(nombreArchivo, 0, sizeof(nombreArchivo));
@@ -125,6 +130,7 @@ void enviameUnArchivo(int sockclifd) {
     printf("\n"); // Añadir un salto de línea al final del contenido del archivo
 }
 
+// Modificar el contenido de un archivo en el servidor
 void modificaArchivo(int sockclifd) {
     char nombreArchivo[64];
     char nuevoContenido[LONGMENSAJE];
@@ -161,6 +167,7 @@ void modificaArchivo(int sockclifd) {
     printf("\n");
 }
 
+// Eliminar un archivo en el servidor
 void eliminaArchivo(int sockclifd) {
     char nombreArchivo[64];
     memset(nombreArchivo, 0, sizeof(nombreArchivo));
@@ -190,6 +197,7 @@ void eliminaArchivo(int sockclifd) {
     printf("\n");
 }
 
+// Crear un nuevo archivo en el servidor con contenido especificado
 void creaArchivo(int sockclifd) {
     char nombreArchivo[64];
     char contenido[LONGMENSAJE];
@@ -226,6 +234,7 @@ void creaArchivo(int sockclifd) {
     printf("\n");
 }
 
+// Cerrar la conexión con el servidor
 void cierraConexion(int sockclifd) {
     char mensaje[LONGMENSAJE];
     memset(mensaje, 0, sizeof(mensaje));
@@ -241,6 +250,7 @@ void cierraConexion(int sockclifd) {
     }
 }
 
+// Mostrar el menú de opciones al usuario
 int menu(void) {
     printf("Menu de opciones del Cliente\n");
     printf("1. Enviame el Directorio\n");
