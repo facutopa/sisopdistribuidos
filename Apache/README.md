@@ -13,3 +13,14 @@ Para implementar y probar este ejercicio se deberá instalar y configurar un ser
 **Cliente que se ejecuta en un SO Linux Debian**
 
 clienteApache.c
+
+### Explicación
+
+#### Función `eliminarEtiquetasHTML`:
+Esta función recorre el contenido recibido y copia solo los caracteres que no están dentro de las etiquetas HTML (delimitadas por `<` y `>`).
+
+#### Modificación en el `main`:
+
+- Se añade una nueva variable `plain_text` para almacenar el texto sin etiquetas HTML.
+- Después de recibir la respuesta del servidor, se llama a `eliminarEtiquetasHTML(buf, plain_text)` para procesar el contenido recibido y eliminar las etiquetas HTML.
+- Finalmente, se imprime el contenido sin etiquetas HTML.
