@@ -60,3 +60,51 @@ El código de `cliente.c` implementa un cliente que se conecta a un servidor, en
 3. **Detección de Desconexión**:
     - Si la función `send` devuelve un valor negativo, significa que hubo un error al enviar el mensaje, y el cliente sale del bucle.
     - Si la función `read` devuelve 0, significa que el servidor ha cerrado la conexión, y el cliente muestra el mensaje "Server disconnected" antes de salir del bucle.
+
+Se logra la implementación de la siguiente manera:
+
+1. **Planificación por Prioridad:**
+   - En tu servidor, cuando un cliente se conecta, se recibe su prioridad inicial. Esto se hace en la parte donde se lee `priority_buffer` y se convierte a un entero (`client_priority`).
+   - Luego, se crean los argumentos del hilo (`ThreadArgs`) que incluyen esta prioridad y se insertan en una cola de prioridad mediante la función `insert_priority_queue`.
+   - La cola de prioridad (`priority_queue`) organiza a los clientes de manera que los de mayor prioridad sean atendidos primero. Esto se ve en la función `insert_priority_queue`, donde se inserta el nuevo cliente en la posición adecuada según su prioridad.
+
+2. **Asignación de Hilos del Pool:**
+   - Cuando un hilo del pool está disponible, se extrae el cliente con mayor prioridad de la cola de prioridad mediante la función `get_next_client`.
+   - El cliente extraído se asigna a un hilo disponible, marcando el hilo como ocupado y creando el hilo con `pthread_create`, lo que asegura que los clientes con mayor prioridad sean atendidos primero, si hay hilos disponibles.
+
+3. **Ejemplo de Código Relevante:**
+   - Inserción en la cola de prioridad:
+     ```c
+     void insert_priority_queue(ThreadArgs *client_args) {
+         PriorityQueueNode *new_node = (PriorityQueueNode *)malloc(sizeof(PriorityQueueNode));
+         new_node->client_args = client_args;
+         new_node->next = NULL;
+
+         if (priority_queue == NULL || priority_queue->client_args->priority < client_args->priority) {
+             new_node->next = priority_queue;
+             priority_queue = new_node;
+         } else {
+             PriorityQueueNode *current = priority_queue;
+             while (current->next != NULL && current->next->client_args->priority >= client_args->priority) {
+                 current = current->next;
+             }
+             new_node->next = current->next;
+             current->next = new_node;
+         }
+     }
+     ```
+   - Extracción del cliente de mayor prioridad:
+     ```c
+     ThreadArgs *get_next_client() {
+         if (priority_queue == NULL) {
+             return NULL;
+         }
+         PriorityQueueNode *node = priority_queue;
+         priority_queue = priority_queue->next;
+         ThreadArgs *client_args = node->client_args;
+         free(node);
+         return client_args;
+     }
+     ```
+
+Este enfoque asegura que los clientes se manejen de acuerdo a sus prioridades.
