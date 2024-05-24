@@ -1,3 +1,10 @@
+### PLANIFICACION DE HILOS
+Nuestro último aspecto del diseño relativo a los hilos es la planificación. Los
+hilos se pueden planificar mediante distintos algoritmos, entre los que se
+encuentran por prioridad, round robin y FCFS. Los paquetes de hilos
+proporcionan a menudo ciertas llamadas para que el usuario pueda especificar
+el algoritmo de planificación y establecer las prioridades, en su caso.
+
 ### Explicación del `server.c`
 
 El código de `server.c` implementa un servidor concurrente que maneja múltiples clientes utilizando un pool de hilos. El servidor acepta conexiones de clientes y asigna cada cliente a un hilo basado en su prioridad. Además, maneja la desconexión ordenada de todos los clientes si el servidor se cierra.
