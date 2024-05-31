@@ -141,12 +141,33 @@ void modificaArchivo(int sockclifd) {
     memset(nuevoContenido, 0, sizeof(nuevoContenido));
     char mensaje[LONGMENSAJE];
     memset(mensaje, 0, sizeof(mensaje));
-    strcpy(mensaje, "3");
+    strcpy(mensaje, "2");
     printf("Ingrese el nombre del archivo a modificar: ");
     scanf("%63s", nombreArchivo);
     getchar();  // Para limpiar el salto de línea del buffer de entrada
-    printf("Ingrese el nuevo contenido del archivo: ");
+    strcat(mensaje, nombreArchivo);
+    send(sockclifd, mensaje, strlen(mensaje), 0);
+
+    // Mostrar el contenido actual del archivo
+    printf("Contenido actual del archivo:\n");
+    while (1) {
+        int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
+        if (nb > 0) {
+            mensaje[nb] = '\0';
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s", mensaje);
+                break;
+            }
+            printf("%s", mensaje);
+        } else {
+            if (nb < 0) perror("Error al recibir el mensaje");
+            break;
+        }
+    }
+    printf("\nIngrese las modificaciones en el formato 'producto cantidad', o 'eliminar producto' para eliminar, o 'agregar producto cantidad' para agregar:\n");
     fgets(nuevoContenido, LONGMENSAJE, stdin);
+    strcpy(mensaje, "3");
     strcat(mensaje, nombreArchivo);
     strcat(mensaje, "\n");
     strcat(mensaje, nuevoContenido);
@@ -216,7 +237,7 @@ void creaArchivo(int sockclifd) {
     printf("Ingrese el nombre del nuevo archivo: ");
     scanf("%63s", nombreArchivo);
     getchar();  // Para limpiar el salto de línea del buffer de entrada
-    printf("Ingrese el contenido del nuevo archivo: ");
+    printf("Ingrese el contenido del nuevo archivo en el formato 'producto cantidad', una línea por producto:\n");
     fgets(contenido, LONGMENSAJE, stdin);
     strcat(mensaje, nombreArchivo);
     strcat(mensaje, "\n");
