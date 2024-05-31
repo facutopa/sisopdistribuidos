@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -88,7 +87,9 @@ void enviameDirectorio(int sockclifd) {
         int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
         if (nb > 0) {
             mensaje[nb] = '\0';
-            if (strcmp(mensaje, "FIN") == 0) {
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s", mensaje);
                 break;
             }
             printf("%s", mensaje);
@@ -118,7 +119,9 @@ void enviameUnArchivo(int sockclifd) {
         int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
         if (nb > 0) {
             mensaje[nb] = '\0';
-            if (strcmp(mensaje, "FIN") == 0) {
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s", mensaje);
                 break;
             }
             printf("%s", mensaje);
@@ -127,7 +130,7 @@ void enviameUnArchivo(int sockclifd) {
             break;
         }
     }
-    printf("\n"); // Añadir un salto de línea al final del contenido del archivo
+    printf("\n");
 }
 
 // Modificar el contenido de un archivo en el servidor
@@ -155,7 +158,9 @@ void modificaArchivo(int sockclifd) {
         int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
         if (nb > 0) {
             mensaje[nb] = '\0';
-            if (strcmp(mensaje, "FIN") == 0) {
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s\n", mensaje);
                 break;
             }
             printf("%s\n", mensaje);
@@ -185,7 +190,9 @@ void eliminaArchivo(int sockclifd) {
         int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
         if (nb > 0) {
             mensaje[nb] = '\0';
-            if (strcmp(mensaje, "FIN") == 0) {
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s\n", mensaje);
                 break;
             }
             printf("%s\n", mensaje);
@@ -222,7 +229,9 @@ void creaArchivo(int sockclifd) {
         int nb = recv(sockclifd, mensaje, sizeof(mensaje) - 1, 0);
         if (nb > 0) {
             mensaje[nb] = '\0';
-            if (strcmp(mensaje, "FIN") == 0) {
+            if (strstr(mensaje, "\nEND\n") != NULL) {
+                mensaje[nb - strlen("\nEND\n")] = '\0';
+                printf("%s\n", mensaje);
                 break;
             }
             printf("%s\n", mensaje);
