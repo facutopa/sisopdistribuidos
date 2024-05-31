@@ -105,7 +105,7 @@ void *atender(void *arg) {
                 } else {
                     perror("Error al abrir el directorio");
                 }
-                strcpy(buffer, "FIN");  // Indicar el fin del listado
+                strcpy(buffer, "\nEND\n");  // Indicar el fin del listado
                 send(sockclifd, buffer, strlen(buffer), 0);
             } else if (buffer[0] == '2') {
                 // Enviar contenido de un archivo al cliente
@@ -124,7 +124,7 @@ void *atender(void *arg) {
                     }
                     close(fd);
                 }
-                strcpy(buffer, "FIN");  // Indicar el fin del archivo
+                strcpy(buffer, "\nEND\n");  // Indicar el fin del archivo
                 send(sockclifd, buffer, strlen(buffer), 0);
             } else if (buffer[0] == '3') {
                 // Modificar el contenido de un archivo
@@ -148,7 +148,7 @@ void *atender(void *arg) {
                     }
                     close(fd);
                 }
-                strcpy(buffer, "FIN");  // Indicar el fin de la modificación
+                strcpy(buffer, "\nEND\n");  // Indicar el fin de la modificación
                 send(sockclifd, buffer, strlen(buffer), 0);
             } else if (buffer[0] == '4') {
                 // Eliminar un archivo
@@ -162,7 +162,7 @@ void *atender(void *arg) {
                     strcpy(buffer, "Error al eliminar el archivo");
                 }
                 send(sockclifd, buffer, strlen(buffer), 0);
-                strcpy(buffer, "FIN");  // Indicar el fin de la eliminación
+                strcpy(buffer, "\nEND\n");  // Indicar el fin de la eliminación
                 send(sockclifd, buffer, strlen(buffer), 0);
             } else if (buffer[0] == '5') {
                 // Crear un nuevo archivo con contenido
@@ -186,7 +186,7 @@ void *atender(void *arg) {
                     }
                     close(fd);
                 }
-                strcpy(buffer, "FIN");  // Indicar el fin de la creación
+                strcpy(buffer, "\nEND\n");  // Indicar el fin de la creación
                 send(sockclifd, buffer, strlen(buffer), 0);
             } else if (buffer[0] == '9') {
                 // Cerrar la conexión con el cliente
