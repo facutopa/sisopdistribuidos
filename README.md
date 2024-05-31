@@ -16,14 +16,10 @@
 
 ---
 
-#### Título del Trabajo: Actividades
+#### Apuntes:
 
----
+cliente manda hora
+servidor se debe ocupar de recibir la hora en formato string y convertirlo
 
-**Resumen:**
-
-Presentación de diversos trabajos practicos que a solicitado el profesor en base a la tematica vista.
-
----
-
-**Fecha de entrega:** 24/05/2024
+hilos - planificacion
+manejar 2 hilos, ver como maneja cuando se conecta otro cliente
