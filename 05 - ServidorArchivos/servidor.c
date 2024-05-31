@@ -129,16 +129,68 @@ void *atender(void *arg) {
             } else if (buffer[0] == '3') {
                 // Modificar el contenido de un archivo
                 char *filename = buffer + 1;
-                char *new_content = strstr(buffer, "\n") + 1;
+                char *content = strstr(buffer, "\n") + 1;
                 filename[strcspn(filename, "\n")] = '\0';  // Eliminar carácter de nueva línea
 
-                int fd = open(filename, O_WRONLY | O_TRUNC);
+                // Leer el contenido actual del archivo
+                char old_content[MAX_BUFFER];
+                int fd = open(filename, O_RDWR);
                 if (fd < 0) {
                     perror("Error al abrir el archivo");
                     strcpy(buffer, "Error al abrir el archivo");
                     send(sockclifd, buffer, strlen(buffer), 0);
                 } else {
-                    if (write(fd, new_content, strlen(new_content)) < 0) {
+                    int bytes_read = read(fd, old_content, sizeof(old_content) - 1);
+                    old_content[bytes_read] = '\0';
+
+                    // Modificar el contenido del archivo basado en la solicitud del cliente
+                    char *line = strtok(content, "\n");
+                    while (line != NULL) {
+                        if (strstr(line, "agregar ") == line) {
+                            // Agregar producto
+                            line += strlen("agregar ");
+                            strcat(old_content, line);
+                            strcat(old_content, "\n");
+                        } else if (strstr(line, "eliminar ") == line) {
+                            // Eliminar producto
+                            line += strlen("eliminar ");
+                            char *pos = strstr(old_content, line);
+                            if (pos != NULL) {
+                                char *end_of_line = strstr(pos, "\n");
+                                if (end_of_line != NULL) {
+                                    memmove(pos, end_of_line + 1, strlen(end_of_line + 1) + 1);
+                                } else {
+                                    *pos = '\0';
+                                }
+                            }
+                        } else {
+                            // Modificar producto
+                            char producto[64];
+                            int cantidad;
+                            sscanf(line, "%s %d", producto, &cantidad);
+                            char *pos = strstr(old_content, producto);
+                            if (pos != NULL) {
+                                char *end_of_line = strstr(pos, "\n");
+                                if (end_of_line != NULL) {
+                                    memmove(pos, end_of_line + 1, strlen(end_of_line + 1) + 1);
+                                } else {
+                                    *pos = '\0';
+                                }
+                                strcat(old_content, producto);
+                                strcat(old_content, " ");
+                                char cantidad_str[10];
+                                sprintf(cantidad_str, "%d", cantidad);
+                                strcat(old_content, cantidad_str);
+                                strcat(old_content, "\n");
+                            }
+                        }
+                        line = strtok(NULL, "\n");
+                    }
+
+                    // Escribir el contenido modificado en el archivo
+                    lseek(fd, 0, SEEK_SET);  // Volver al inicio del archivo
+                    ftruncate(fd, 0);  // Limpiar el archivo
+                    if (write(fd, old_content, strlen(old_content)) < 0) {
                         perror("Error al escribir en el archivo");
                         strcpy(buffer, "Error al escribir en el archivo");
                         send(sockclifd, buffer, strlen(buffer), 0);
