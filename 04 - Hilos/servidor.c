@@ -10,7 +10,7 @@
 
 #define PORT 8080
 #define MAX_CLIENTS 5
-#define THREAD_POOL_SIZE 10
+#define THREAD_POOL_SIZE 2
 
 // Estructura para pasar parámetros al hilo de manejo de clientes
 typedef struct {
