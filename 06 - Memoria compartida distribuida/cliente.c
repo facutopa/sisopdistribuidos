@@ -80,11 +80,27 @@ int main(int argc, char *argv[]) {
             char nuevoContenido[TAMPAGINA];
             printf("Ingrese número de página (0-15): ");
             scanf("%d", &pagina);
-            printf("Ingrese nuevo contenido: ");
-            scanf("%s", nuevoContenido);
-            snprintf(mensaje, LONGMENSAJE, "2%d%s", pagina, nuevoContenido);
+
+            // Informar al servidor que la página está bloqueada
+            snprintf(mensaje, LONGMENSAJE, "2%d", pagina);
             send(idsock, mensaje, strlen(mensaje), 0);
             int nb = recv(idsock, mensaje, LONGMENSAJE, 0);
+            if (nb > 0) {
+                mensaje[nb] = '\0';
+                if (strcmp(mensaje, "Pagina invalida\n") == 0) {
+                    printf("Respuesta del servidor: %s\n", mensaje);
+                    continue;
+                }
+            } else {
+                perror("recv");
+                continue;
+            }
+
+            // Modificar contenido de la página
+            printf("Ingrese nuevo contenido: ");
+            scanf("%s", nuevoContenido);
+            send(idsock, nuevoContenido, strlen(nuevoContenido), 0);
+            nb = recv(idsock, mensaje, LONGMENSAJE, 0);
             if (nb > 0) {
                 mensaje[nb] = '\0';
                 printf("Respuesta del servidor: %s\n", mensaje);
