@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
         imprimirMenu();
         printf("Seleccione una opción: ");
         scanf(" %c", &opcion);
+        getchar(); // Para consumir el carácter de nueva línea dejado por scanf
 
         if (opcion == '1') {
             // Ver contenido de la página
@@ -80,6 +81,7 @@ int main(int argc, char *argv[]) {
             char nuevoContenido[TAMPAGINA];
             printf("Ingrese número de página (0-15): ");
             scanf("%d", &pagina);
+            getchar(); // Para consumir el carácter de nueva línea dejado por scanf
 
             // Informar al servidor que la página está bloqueada
             snprintf(mensaje, LONGMENSAJE, "2%d", pagina);
@@ -87,7 +89,7 @@ int main(int argc, char *argv[]) {
             int nb = recv(idsock, mensaje, LONGMENSAJE, 0);
             if (nb > 0) {
                 mensaje[nb] = '\0';
-                if (strcmp(mensaje, "Pagina invalida\n") == 0) {
+                if (strcmp(mensaje, "Pagina invalida\n") == 0 || strcmp(mensaje, "Pagina en uso, intentelo mas tarde\n") == 0) {
                     printf("Respuesta del servidor: %s\n", mensaje);
                     continue;
                 }
@@ -98,7 +100,8 @@ int main(int argc, char *argv[]) {
 
             // Modificar contenido de la página
             printf("Ingrese nuevo contenido: ");
-            scanf("%s", nuevoContenido);
+            fgets(nuevoContenido, TAMPAGINA, stdin);
+            nuevoContenido[strcspn(nuevoContenido, "\n")] = '\0'; // Eliminar el carácter de nueva línea
             send(idsock, nuevoContenido, strlen(nuevoContenido), 0);
             nb = recv(idsock, mensaje, LONGMENSAJE, 0);
             if (nb > 0) {
