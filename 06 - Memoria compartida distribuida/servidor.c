@@ -116,16 +116,33 @@ void *maneja_cliente(void *arg) {
             } else {
                 strcpy(mensaje, "Pagina invalida\n");
             }
-        } else if (opcion == '2') { // Cliente modifica una página
+        } else if (opcion == '2') { // Cliente desea modificar una página
             int pagina = mensaje[1] - '0';
             if (pagina >= 0 && pagina < NUM_PAGINAS) {
                 sem_wait(&semaforo);
-                strncpy(vecPuntPag[pagina], &mensaje[2], TAMPAGINA);
+                paginasEnUso[pagina] = idsockc; // Bloquear la página
                 sem_post(&semaforo);
-                strcpy(mensaje, "Actualizacion exitosa\n");
+                imprime_info_paginas(); // Imprimir información de las páginas
+                strcpy(mensaje, "Pagina bloqueada\n");
             } else {
                 strcpy(mensaje, "Pagina invalida\n");
             }
+            send(idsockc, mensaje, strlen(mensaje), 0);
+
+            // Esperar el nuevo contenido de la página
+            nb = recv(idsockc, mensaje, LONGMENSAJE, 0);
+            if (nb > 0) {
+                mensaje[nb] = '\0';
+                sem_wait(&semaforo);
+                strncpy(vecPuntPag[pagina], mensaje, TAMPAGINA);
+                paginasEnUso[pagina] = -1; // Desbloquear la página
+                sem_post(&semaforo);
+                strcpy(mensaje, "Actualizacion exitosa\n");
+            } else {
+                perror("recv");
+                strcpy(mensaje, "Error al recibir contenido\n");
+            }
+            imprime_info_paginas(); // Imprimir información de las páginas
         } else if (opcion == '9') { // Cliente desea salir
             strcpy(mensaje, "Desconectando\n");
             send(idsockc, mensaje, strlen(mensaje), 0);
@@ -135,7 +152,6 @@ void *maneja_cliente(void *arg) {
         }
 
         send(idsockc, mensaje, strlen(mensaje), 0);
-        imprime_info_paginas(); // Imprime el contenido de todas las páginas después de cada interacción
     }
 
     close(idsockc);
@@ -145,7 +161,7 @@ void *maneja_cliente(void *arg) {
 void imprime_info_paginas() {
     printf("Contenido de todas las páginas:\n");
     for (int i = 0; i < NUM_PAGINAS; i++) {
-        printf("Pagina %d: %.*s\n", i, TAMPAGINA, vecPuntPag[i]);
+        printf("Pagina %d: %.*s - %s\n", i, TAMPAGINA, vecPuntPag[i], paginasEnUso[i] == -1 ? "Disponible" : "En uso");
     }
 }
 
