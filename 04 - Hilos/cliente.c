@@ -1,86 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
-#define PORT 8080
+#define BUFFER_SIZE 8192
+
+void enviarComando(int sockcli) {
+    char comando[30];
+    printf("Enviar comando desde el Cliente al Servidor >> ");
+    fgets(comando, sizeof(comando), stdin);
+    comando[strcspn(comando, "\n")] = 0;  // Remove newline character
+    send(sockcli, comando, strlen(comando), 0);
+}
+
+void recibirMensaje(int sockcli) {
+    char buffer[BUFFER_SIZE];
+    int n = recv(sockcli, buffer, BUFFER_SIZE, 0);
+    if (n > 0) {
+        buffer[n] = '\0';
+        printf("Respuesta del servidor: %s\n", buffer);
+    }
+}
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        printf("Ingreso: %s <server_ip> <priority>\n", argv[0]);
-        return 1;
+        printf("Uso: %s <IP del servidor> <Puerto>\n", argv[0]);
+        exit(1);
     }
 
-    char *server_ip = argv[1];
-    int priority = atoi(argv[2]);
+    int sockcli;
+    struct sockaddr_in serv_addr;
 
-    int client_socket;
-    struct sockaddr_in server_address;
-    char buffer[1024] = {0};
-
-    // Crear el socket
-    if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("Creacion erronea de Socket");
-        exit(EXIT_FAILURE);
+    sockcli = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockcli < 0) {
+        perror("Error al crear el socket");
+        exit(1);
     }
 
-    // Configurar la dirección del servidor
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(PORT);
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(atoi(argv[2]));
+    serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
 
-    // Convertir dirección IP de texto a binario
-    if (inet_pton(AF_INET, server_ip, &server_address.sin_addr) <= 0) {
-        perror("Direccion incorrecta o no soportoda");
-        exit(EXIT_FAILURE);
+    if (connect(sockcli, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("Error al conectar con el servidor");
+        close(sockcli);
+        exit(1);
     }
 
-    // Conectar al servidor
-    if (connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
-        perror("Conexion fallida");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Conectado al servidor\n");
-
-    // Enviar la prioridad al servidor
-    char priority_buffer[10];
-    sprintf(priority_buffer, "%d", priority);
-    if (send(client_socket, priority_buffer, strlen(priority_buffer), 0) < 0) {
-        perror("Envio fallido");
-        close(client_socket);
-        exit(EXIT_FAILURE);
-    }
-
-    // Mantener la comunicación con el servidor
     while (1) {
-        printf("Ingrese el mensaje: ");
-        fgets(buffer, sizeof(buffer), stdin);
-
-        // Enviar el mensaje al servidor
-        if (send(client_socket, buffer, strlen(buffer), 0) < 0) {
-            perror("Envio fallido");
-            break;
-        }
-
-        // Leer la respuesta del servidor
-        int valread = read(client_socket, buffer, sizeof(buffer) - 1);
-        if (valread < 0) {
-            perror("Lectura fallida");
-            break;
-        } else if (valread == 0) {
-            printf("Server desconectado\n");
-            break;
-        }
-
-        buffer[valread] = '\0';
-        printf("Respuesta de Server: %s\n", buffer);
+        enviarComando(sockcli);
+        recibirMensaje(sockcli);
     }
 
-    // Cerrar el socket
-    close(client_socket);
-
+    close(sockcli);
     return 0;
 }
