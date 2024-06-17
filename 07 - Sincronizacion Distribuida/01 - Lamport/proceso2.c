@@ -1,4 +1,3 @@
-
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -8,12 +7,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 
-#define IP "192.168.0.209" //Ubicacion del servidor
-#define PUERTO 8888
+#define IP "192.168.0.215" //Ubicacion del servidor
+#define PUERTO 9999
 
 void UbicacionDelCliente(struct sockaddr_in);
 void RecibeEnviaMensaje(int);
@@ -39,74 +38,72 @@ int main(int argc, char *argv[])
    printf("listen %d\n",listen(idsocks,5));
 
    while(1)
-   {  
-     printf("esperando conexion\n");
+   {
+     printf("Esperando conexion\n");
      idsockc = accept(idsocks,(struct sockaddr *)&c_sock,&lensock);
 
      if(idsockc != -1)
      {
-         if (!fork()) 
-             {  
-               /* Ubicacion del Cliente */    
+         if (!fork())
+             {
+               /* Ubicacion del Cliente */
                printf("conexion aceptada desde el cliente\n");
                //UbicacionDelCliente(c_sock);
-               /*--------------------------------------------------*/  
+               /*--------------------------------------------------*/
                //Recibiendo tamaño del proceso en bytes
-		
-		
-		    char buf[30];
-		    int nb;
-		    int defout ;
-		    nb = read(idsockc,buf,30);
-		    
-		    buf[nb] = '\0';
-		    printf("Hora de envio del mensaje B: %s\n" ,buf);
-		    
-		    char hora[128];
-		    printf("\nHora de recepcion del mensaje B: ");
-			
-		    DameHoraMaquina(hora);
-		    	
-		    printf("%s\n", hora);
 
-		    int hr, min, seg;
-		    int hr2, min2, seg2;	
-		    hr = atoi( strtok(buf, ":"));		
-		    min= atoi(strtok(NULL, ":"));
-		    seg= atoi(strtok(NULL, ":"));
+                    char buf[30];
+                    int nb;
+                    int defout ;
+                    nb = read(idsockc,buf,30);
 
-		    hr2 = atoi( strtok(hora, ":"));		
-		    min2= atoi(strtok(NULL, ":"));
-		    seg2= atoi(strtok(NULL, ":"));
+                    buf[nb] = '\0';
+                    printf("Hora de envio del mensaje B: %s\n" ,buf);
 
-		    
-		    if(hr>hr2)
-		    {
-		      hr2=hr+1;	
-		      printf("\nCorregir");
-		      printf("\n Nueva hora %d:%d: %d", hr2 , min2 , seg2 );
-		    }
-		    else
-		      if(hr==hr2)
-		       	{
-		 	  if(min>min2)
-			  {
-			    min2=min+1;
-			    printf("\nCorregir");
-			    printf("\n Nueva hora %d:%d: %d", hr2 , min2 , seg2 );			
-		    	  }
-		 	  else
-			    if(min==min2)	
-		    	    {
-				if(seg>seg2 || seg==seg2)
-				{
-				  seg2=seg+1;
-				  printf("\nCorregir");
-				  printf("\n Nueva hora %d:%d: %d", hr2 , min2 , seg2 );
-				}
-			    }
-			}
-             }   
+                    char hora[128];
+                    printf("\nHora de recepcion del mensaje B: \n");
+                    DameHoraMaquina(hora);
+
+                    printf("%s\n", hora);
+
+                    int hr, min, seg;
+                    int hr2, min2, seg2;
+                    hr = atoi( strtok(buf, ":"));
+                    min= atoi(strtok(NULL, ":"));
+                    seg= atoi(strtok(NULL, ":"));
+
+                    hr2 = atoi( strtok(hora, ":"));
+                    min2= atoi(strtok(NULL, ":"));
+                    seg2= atoi(strtok(NULL, ":"));
+
+
+                    if(hr>hr2)
+                    {
+                      hr2=hr+1;
+                      printf("\nCorregir");
+                      printf("\n Nueva hora %02d:%02d:%02d \n", hr2 , min2 , seg2 );
+                    }
+                    else
+                      if(hr==hr2)
+                        {
+                          if(min>min2)
+                          {
+                            min2=min+1;
+                            printf("\nCorregir");
+                            printf("\n Nueva hora %02d:%02d:%02d \n", hr2 , min2 , seg2 );
+                          }
+                          else
+                            if(min==min2)
+                            {
+                                if(seg>seg2 || seg==seg2)
+                                {
+                                  seg2=seg+1;
+                                  printf("\nCorregir");
+                                  printf("\n Nueva hora %02d:%02d:%02d \n", hr2 , min2 , seg2 );
+                                }
+                            }
+                        }
+             }
      }
      else
      {
