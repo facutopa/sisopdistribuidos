@@ -66,8 +66,8 @@ int split(const char *str, char c, char ***arr) {
 int main() {
     srand(time(NULL));
     float client_local_clock = rand() % 10;
-    printf("Client starts. Client pid is %d\n", getpid());
-    printf("Client local clock is %f\n\n", client_local_clock);
+    printf("Client inicia. Client pid es %d\n", getpid());
+    printf("Reloj local del Client es %f\n\n", client_local_clock);
 
     int client_socket_fd, valread;
     char client_read_buffer[1024] = {0};
@@ -76,12 +76,12 @@ int main() {
     server_addr.sin_port = htons(PORT);
 
     if ((client_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\nClient: Socket creation error\n");
+        printf("\nClient: Error de creacion de Socket\n");
         return -1;
     }
 
     if (inet_pton(AF_INET, SERVER, &server_addr.sin_addr) <= 0) {
-        printf("\nClient: Invalid address / Address not supported\n");
+        printf("\nClient: Direccion erronea\n");
         return -1;
     }
 
@@ -92,22 +92,22 @@ int main() {
 
     char server_ip[INET_ADDRSTRLEN] = "";
     inet_ntop(AF_INET, &server_addr.sin_addr, server_ip, INET_ADDRSTRLEN);
-    printf("Client: connected server(%s:%d).\n", server_ip, ntohs(server_addr.sin_port));
+    printf("Client: conectado al servidor(%s:%d).\n", server_ip, ntohs(server_addr.sin_port));
 
     // First communication round
     valread = read(client_socket_fd, client_read_buffer, 1024);
-    printf("Client: read: '%s'\n", client_read_buffer);
+    printf("Client: lee: '%s'\n", client_read_buffer);
 
-    if (strcmp(client_read_buffer, "Hello from server, please tell me your local clock value.") == 0) {
+    if (strcmp(client_read_buffer, "Hola desde Servidor, decime el valor de tu reloj local.") == 0) {
         char msg[1024];
-        snprintf(msg, sizeof(msg), "Hello from client, my local clock value is %.2f", client_local_clock);
+        snprintf(msg, sizeof(msg), "Hola desde Cliente, el valor de mi reloj local es %.2f", client_local_clock);
         send(client_socket_fd, msg, strlen(msg), 0);
-        printf("Client: sent message: '%s'\n", msg);
+        printf("Client: envia mensaje: '%s'\n", msg);
     }
 
     // Second communication round
     valread = read(client_socket_fd, client_read_buffer, 1024);
-    printf("Client: read: '%s'\n", client_read_buffer);
+    printf("Client: lee: '%s'\n", client_read_buffer);
 
     char **parts;
     int count = split(client_read_buffer, ' ', &parts);
@@ -118,7 +118,7 @@ int main() {
         } else if (strcmp(parts[count-2], "minus") == 0) {
             client_local_clock -= offset;
         }
-        printf("Client local clock is %f\n\n", client_local_clock);
+        printf("Reloj local de Cliente es %f\n\n", client_local_clock);
     }
 
     close(client_socket_fd);
