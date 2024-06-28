@@ -13,7 +13,7 @@
 int main() {
     srand(time(NULL));
     float server_local_clock = rand() % 10;  // Simulamos el reloj del servidor
-    printf("Reloj Local del Servidor: %.2f\n", server_local_clock); // Mostrar la hora inicial del servidor
+    printf("Valor de la Horal local: %.2f\n", server_local_clock); // Mostrar la hora inicial del servidor
 
     int server_socket_fd, new_socket, valread;
     int client_sockets[MAX_CLIENTS];
@@ -28,7 +28,7 @@ int main() {
     int opt = 1;
 
     if ((server_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Server: fallo socket");
+        perror("Server: socket failed");
         exit(EXIT_FAILURE);
     }
 
@@ -47,7 +47,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server: server esta esperando...\n");
+    printf("Server: server is listening ...\n");
 
     while (num_clients < MAX_CLIENTS) {
         socklen_t length = sizeof(client_addr);
@@ -59,16 +59,16 @@ int main() {
         client_sockets[num_clients] = new_socket;
         num_clients++;
 
-        printf("Server: nuevo Cliente aceptado. Client num.: %d\n", num_clients);
+        printf("Server: nuevo Cliente aceptado. Cliente num: %d\n", num_clients);
 
-        const char *msg = "Hola desde Servidor, decime el valor de tu hora local.";
+        const char *msg = "Hola desde Server, dime el valor de tu reloj local.";
         send(new_socket, msg, strlen(msg), 0);
 
         valread = read(new_socket, buffer, 1024);
-        printf("Server: recibido '%s'\n", buffer);
+        printf("Server: recibe '%s'\n", buffer);
 
         // Extract the last part of the message which contains the client's clock
-        sscanf(buffer, "Hola desde Cliente, el valor de mi hora local es %f", &client_clocks[num_clients - 1]);
+        sscanf(buffer, "Hola desde Cliente, el valor de mi reloj local es %f", &client_clocks[num_clients - 1]);
     }
 
     float sum_clocks = server_local_clock;
@@ -78,18 +78,18 @@ int main() {
     float average_clock = sum_clocks / (num_clients + 1);
 
     // Display the calculated average clock
-    printf("Reloj promedio calculado: %.2f\n", average_clock);
+    printf("Calculo de reloj promedio: %.2f\n", average_clock);
 
     // Send adjustment to each client and adjust server's clock
     for (int i = 0; i < num_clients; i++) {
         float adjustment = average_clock - client_clocks[i];
-        sprintf(buffer, "Ajusta tu reloj en %f segundos", adjustment);
+        sprintf(buffer, "Ajusta el reloj %f segundos", adjustment);
         send(client_sockets[i], buffer, strlen(buffer), 0);
     }
 
     // Adjust the server's own clock
     server_local_clock = average_clock;
-    printf("Reloj local ajustado del servidor: %.2f\n", server_local_clock);
+    printf("Server ajusta el reloj local: %.2f\n", server_local_clock);
 
     close(server_socket_fd);
     return 0;
