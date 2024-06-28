@@ -66,8 +66,8 @@ int split(const char *str, char c, char ***arr) {
 int main() {
     srand(time(NULL));
     float client_local_clock = rand() % 10;
-    printf("Client inicia. Client pid es %d\n", getpid());
-    printf("Reloj local del Client es %f\n\n", client_local_clock);
+    printf("Cliente inicia. Cliente pid es %d\n", getpid());
+    printf("Reloj local del Cliente es %f\n\n", client_local_clock);
 
     int client_socket_fd, valread;
     char client_read_buffer[1024] = {0};
@@ -76,17 +76,17 @@ int main() {
     server_addr.sin_port = htons(PORT);
 
     if ((client_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\nClient: Error de creacion de Socket\n");
+        printf("\nCliente: Error de creacion de Socket\n");
         return -1;
     }
 
     if (inet_pton(AF_INET, SERVER, &server_addr.sin_addr) <= 0) {
-        printf("\nClient: Direccion erronea\n");
+        printf("\nCliente: Direccion erronea\n");
         return -1;
     }
 
     if (connect(client_socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        printf("\nClient: Connection Failed\n");
+        printf("\nCliente: Connection Failed\n");
         return -1;
     }
 
@@ -102,12 +102,12 @@ int main() {
         char msg[1024];
         snprintf(msg, sizeof(msg), "Hola desde Cliente, el valor de mi reloj local es %.2f", client_local_clock);
         send(client_socket_fd, msg, strlen(msg), 0);
-        printf("Client: envia mensaje: '%s'\n", msg);
+        printf("Cliente: envia mensaje: '%s'\n", msg);
     }
 
     // Second communication round
     valread = read(client_socket_fd, client_read_buffer, 1024);
-    printf("Client: lee: '%s'\n", client_read_buffer);
+    printf("Cliente: lee: '%s'\n", client_read_buffer);
 
     char **parts;
     int count = split(client_read_buffer, ' ', &parts);
